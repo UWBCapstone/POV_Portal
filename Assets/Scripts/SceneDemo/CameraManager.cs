@@ -72,6 +72,40 @@ public class CameraManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        if (Input.GetKeyDown(KeyCode.N))
+        {
+            switch (spotSelected)
+            {
+                case Orientation.BL:
+                    spotSelected = Orientation.BM;
+                    break;
+                case Orientation.BM:
+                    spotSelected = Orientation.BR;
+                    break;
+                case Orientation.BR:
+                    spotSelected = Orientation.ML;
+                    break;
+                case Orientation.ML:
+                    spotSelected = Orientation.MM;
+                    break;
+                case Orientation.MM:
+                    spotSelected = Orientation.MR;
+                    break;
+                case Orientation.MR:
+                    spotSelected = Orientation.TL;
+                    break;
+                case Orientation.TL:
+                    spotSelected = Orientation.TM;
+                    break;
+                case Orientation.TM:
+                    spotSelected = Orientation.TR;
+                    break;
+                case Orientation.TR:
+                    spotSelected = Orientation.BL;
+                    break;
+            }
+        }
+
         if (Input.GetKeyDown(KeyCode.Keypad1))
         {
             spotSelected = Orientation.BL;

@@ -10,7 +10,9 @@ public class UVCalc : MonoBehaviour {
         public Vector2 UpperRight;
         public Vector2 LowerRight;
     };
-    
+
+    public double ScaleFactor = 1.0;
+
     public Vector2 LowerLeft;
     public Vector2 LowerRight;
     public Vector2 UpperLeft;
@@ -65,6 +67,9 @@ public class UVCalc : MonoBehaviour {
         ClipPlaneManager clipPlane = new ClipPlaneManager(PortalCamera.GetComponent<Camera>());
         Vector3 origin = gameObject.transform.position;
         GameObject portal = PortalCamera.transform.parent.gameObject;
+
+        origin = AdjustViewpoint();
+
         Ray r00 = Intersector.R00(portal, origin);
         Ray r01 = Intersector.R01(portal, origin);
         Ray r10 = Intersector.R10(portal, origin);
@@ -98,5 +103,18 @@ public class UVCalc : MonoBehaviour {
         Debug.DrawLine(origin, rh11.point, Color.white);
 
         return bounds;
+    }
+
+    public Vector3 AdjustViewpoint()
+    {
+        Vector3 origin = gameObject.transform.position;
+        GameObject portal = PortalCamera.transform.parent.gameObject;
+        
+        Vector3 delta = (portal.transform.position - origin) * ((float)(ScaleFactor - 1));
+        Vector3 adjustedOrigin = origin + delta;
+
+        //GameObject DebugSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //DebugSphere.transform.Translate(adjustedOrigin);
+        return adjustedOrigin;
     }
 }

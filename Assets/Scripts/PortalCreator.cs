@@ -18,12 +18,13 @@ namespace ARPortal
     /// This class is intended to handle the logic of spinning up any portals 
     /// and associated items.
     /// </summary>
-    public class PortalCreator
+    public class PortalCreator : MonoBehaviour
     {
-        public bool UseWebCam = true;
+        public GameObject MainCamera;
+        public PortalManager portalManager;
         public static Mesh cubeMesh;
 
-        static PortalCreator()
+        public void CacheCubeMesh()
         {
             // Cache the cube mesh for easy access to generate the portal 
             // mesh later
@@ -32,60 +33,16 @@ namespace ARPortal
             GameObject.Destroy(tempCube);
         }
 
-        public PortalCreator() { }
-
         public GameObject GeneratePortal()
         {
-            // Determine where you want to generate the portal
-            // Determine the orientation of the portal
-            // Generate the portal object
-            // Make the portal invisible
-            // Generate the portal camera
-            // Set the portal camera settings
-            // Assign the portal camera to the portal object
-            // Assign the portal feed to the camera
-            // Make the portal object visible
-            
-            GameObject portal = generatePortalObject(UseWebCam);
-            SetAsActivePortal(portal);
+            GameObject portal = generatePortalObject();
+            //SetAsActivePortal(portal);
+            portalManager.RegisterPortal(portal);
 
             return portal;
         }
 
-        public bool SetAsActivePortal(GameObject portal)
-        {
-            if (portal != null)
-            {
-                GameObject mainCam = getMainCamera();
-                UVCalc camTracker = mainCam.GetComponent<UVCalc>();
-                if (camTracker == null)
-                {
-                    // If the camera hasn't initialized as a portal camera, make 
-                    // it a portal camera
-                    camTracker = mainCam.AddComponent<UVCalc>();
-                }
-
-                GameObject portalCamObj = portal.transform.GetChild(0).gameObject;
-                camTracker.PortalCamera = portalCamObj;
-
-                ShaderSetter shaderSetter = portal.GetComponent<ShaderSetter>();
-                if (shaderSetter != null)
-                {
-                    shaderSetter.Viewer = mainCam;
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private GameObject generatePortalObject(bool webcamFeed)
+        private GameObject generatePortalObject()
         {
             // Make the portal and disable it so it doesn't show immediately 
             // while loading
@@ -106,14 +63,15 @@ namespace ARPortal
             portal.AddComponent<BoundCalc>();
             ShaderSetter shaderSetter = portal.AddComponent<ShaderSetter>();
             // Set ShaderSetter's main camera for easy reference
-            shaderSetter.Viewer = getMainCamera();
+            //shaderSetter.Viewer = MainCamera;
 
-            if (webcamFeed)
-            {
-                GameObject webcamObj = GameObject.Find("WebCamManager");
-                var webcamManager = webcamObj.GetComponent<WebCamManager>();
-                webcamManager.Portal = portal;
-            }
+            //GameObject webcamObj = GameObject.Find("WebCamManager");
+            //var webCamManager = webcamObj.GetComponent<WebCamManager>();
+            //webCamManager.Portal = portal;
+            portal.AddComponent<PortalScript>();
+            UVCalc uvCalc = portal.AddComponent<UVCalc>();
+            uvCalc.Viewer = MainCamera;
+            uvCalc.PortalCamera = portalCam;
 
             // Reactivate the portal to make it visible now that everything
             // has loaded
@@ -127,6 +85,10 @@ namespace ARPortal
             // Set the mesh filter and mesh renderer to be a cube
             var mf = portal.AddComponent<MeshFilter>();
             var mr = portal.AddComponent<MeshRenderer>();
+            if(cubeMesh = null)
+            {
+                CacheCubeMesh();
+            }
             mf.mesh = cubeMesh;
             mr.material = generatePortalMaterial();
 
@@ -175,29 +137,13 @@ namespace ARPortal
                 portalCam.depth = -1;
             }
         }
-
-        /// <summary>
-        /// [deprecated] Not currently used.
-        /// </summary>
-        /// <param name="portalCam"></param>
-        private void disableCamerasOtherThan(Camera portalCam)
-        {
-            Camera[] allCams = Camera.allCameras;
-            for(int i = 0; i < allCams.Length; i++)
-            {
-                if(allCams[i] != portalCam)
-                {
-                    allCams[i].enabled = false;
-                }
-            }
-        }
         
         private PortalTransform getPortalTransform()
         {
             // Get the phone's camera position and direction
-            GameObject tangoCam = getMainCamera();
-            Vector3 tangoCamPos = tangoCam.transform.position;
-            Vector3 tangoCamDir = tangoCam.transform.forward;
+            GameObject mainCam = MainCamera;
+            Vector3 tangoCamPos = mainCam.transform.position;
+            Vector3 tangoCamDir = mainCam.transform.forward;
 
             // Get the room mesh
             Mesh roomMesh = getRoomMesh();
@@ -210,7 +156,7 @@ namespace ARPortal
             Vector3 portalPos = hit.point - (tangoCamDir * 0.05f);
 
             // Set the portal's orientation to be the same as the camera's
-            Quaternion portalRot = tangoCam.transform.rotation;
+            Quaternion portalRot = mainCam.transform.rotation;
 
             PortalTransform portalTransform = new PortalTransform();
             portalTransform.pos = portalPos;
@@ -254,10 +200,6 @@ namespace ARPortal
 
             return hit;
         }
-
-        private GameObject getMainCamera()
-        {
-            return GameObject.Find("Tango Camera");
-        }
+        
     }
 }

@@ -93,8 +93,7 @@ namespace ARPortal
         {
             GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
             plane.SetActive(false);
-
-
+            
             plane.transform.Translate(clipPlane.ClipRect.center);
             plane.transform.Rotate(Vector3.left, 90);
             plane.transform.Rotate(Vector3.up, 180);

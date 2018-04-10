@@ -6,6 +6,7 @@ namespace ARPortal
 {
     public class NetworkManager : MonoBehaviour
     {
+        public bool DisableNetworking = false;
 #if UNITY_ANDROID
         public PortalManager portalManager;
 #endif
@@ -15,25 +16,35 @@ namespace ARPortal
 #if UNITY_ANDROID
             // Trigger serverfinder
             // Trigger client or server based on platform
-            ServerFinder.FindServer();
+            if (!DisableNetworking)
+            {
+                ServerFinder.FindServer();
+            }
 #else
             // PC
-            ServerFinder.ServerStart();
-            SocketServer_PC.Start();
+            if(!DisableNetworking)
+            {
+                ServerFinder.ServerStart();
+                SocketServer_PC.Start();
+            }
 #endif
         }
 
         public void Update()
         {
 #if UNITY_ANDROID
-            // Get updated textures
-            List<Texture2D> texList = SocketClient_Android.RequestData(Port.SendWebCamData.PortNumber);
-            // Update the textures being used for the portal
-            portalManager.UpdateTextures(texList);
+            if (!DisableNetworking)
+            {
+                // Get updated textures
+                List<Texture2D> texList = SocketClient_Android.RequestData(Port.SendWebCamData.PortNumber);
+                // Update the textures being used for the portal
+                portalManager.UpdateTextures(texList);
+            }
 #else
             // Gather textures
             // Wait for texture requests
             // Let SocketClient / SocketServer deal with it
+            if(!DisableNetworking){}
 #endif
         }
 

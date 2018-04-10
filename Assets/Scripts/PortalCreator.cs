@@ -20,7 +20,7 @@ namespace ARPortal
     /// </summary>
     public class PortalCreator : MonoBehaviour
     {
-        public GameObject MainCamera;
+        public string MainCameraName = "Tango Camera";
         public PortalManager portalManager;
         public static Mesh cubeMesh;
 
@@ -70,7 +70,7 @@ namespace ARPortal
             //webCamManager.Portal = portal;
             portal.AddComponent<PortalScript>();
             UVCalc uvCalc = portal.AddComponent<UVCalc>();
-            uvCalc.Viewer = MainCamera;
+            uvCalc.Viewer = GetMainCamera();
             uvCalc.PortalCamera = portalCam;
 
             // Reactivate the portal to make it visible now that everything
@@ -85,7 +85,7 @@ namespace ARPortal
             // Set the mesh filter and mesh renderer to be a cube
             var mf = portal.AddComponent<MeshFilter>();
             var mr = portal.AddComponent<MeshRenderer>();
-            if(cubeMesh = null)
+            if(cubeMesh == null)
             {
                 CacheCubeMesh();
             }
@@ -141,7 +141,12 @@ namespace ARPortal
         private PortalTransform getPortalTransform()
         {
             // Get the phone's camera position and direction
-            GameObject mainCam = MainCamera;
+            GameObject mainCam = GetMainCamera();
+            if(GetMainCamera() == null)
+            {
+                Debug.LogError("MainCamera is NULL!");
+            }
+            Debug.LogWarning("Main camera can't be found if assigned. Why?");
             Vector3 tangoCamPos = mainCam.transform.position;
             Vector3 tangoCamDir = mainCam.transform.forward;
 
@@ -154,6 +159,9 @@ namespace ARPortal
             // Assign the portal's position to be 0.05m closer to the camera 
             // than the room mesh wall
             Vector3 portalPos = hit.point - (tangoCamDir * 0.05f);
+
+            Debug.LogError("Assigning static portal position for testing purposes only!");
+            portalPos = new Vector3(0, 0, 0.5f);
 
             // Set the portal's orientation to be the same as the camera's
             Quaternion portalRot = mainCam.transform.rotation;
@@ -201,5 +209,9 @@ namespace ARPortal
             return hit;
         }
         
+        public GameObject GetMainCamera()
+        {
+            return GameObject.Find(MainCameraName);
+        }
     }
 }

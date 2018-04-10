@@ -6,7 +6,6 @@ namespace ARPortal
 {
     public class TouchScreenManager : MonoBehaviour
     {
-
         public static PortalCreator portalCreator;
         
         public void Awake()
@@ -38,9 +37,15 @@ namespace ARPortal
 
                 if (touched)
                 {
-                    GameObject portal = portalCreator.GeneratePortal();
+                    //GameObject portal = portalCreator.GeneratePortal();
+                    OnTap();
                 }
             }
+        }
+
+        public void OnTap()
+        {
+            GameObject portal = portalCreator.GeneratePortal();
         }
     }
 }

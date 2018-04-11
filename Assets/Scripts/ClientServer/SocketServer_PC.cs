@@ -18,6 +18,12 @@ namespace ARPortal
         public static int numListeners = 15;
         protected static TcpListener listener;
 
+        public static WebCamTexture[] feeds;
+        public static int[] widths;
+        public static int[] heights;
+        public static List<Color[]> pixelsList;
+        public static string[] names;
+
         // Thread signal for client connection
         //public static ManualResetEvent clientConnected = new ManualResetEvent(false);
 
@@ -34,6 +40,8 @@ namespace ARPortal
 
         public static void Start()
         {
+            UpdateCachedFeeds();
+
             int port = Port.ClientServerConnection.PortNumber;
             listener = new TcpListener(IPAddress.Any, port);
             // Bind listener
@@ -43,6 +51,23 @@ namespace ARPortal
             listener.Server.Listen(numListeners);
             // Start accepting the socket
             listener.BeginAcceptSocket(new AsyncCallback(AcceptSocketCallback), listener);
+        }
+
+        public static void UpdateCachedFeeds()
+        {
+            feeds = GameObject.Find("WebCamManager").GetComponent<WebCamManager>().VideoFeeds;
+            widths = new int[feeds.Length];
+            heights = new int[feeds.Length];
+            pixelsList = new List<Color[]>();
+            names = new string[feeds.Length];
+
+            for (int i = 0; i < feeds.Length; i++)
+            {
+                widths[i] = feeds[i].width;
+                heights[i] = feeds[i].height;
+                pixelsList.Add(feeds[i].GetPixels());
+                names[i] = feeds[i].name;
+            }
         }
 
         public static void AcceptSocketCallback(IAsyncResult ar)
@@ -59,18 +84,19 @@ namespace ARPortal
             int clientPort = ((IPEndPoint)clientSocket.RemoteEndPoint).Port;
             Debug.Log("client port is " + clientPort);
 
-            if(clientPort == Port.SendWebCamData.PortNumber)
+            if (clientPort == Port.SendWebCamData.PortNumber)
             {
                 List<Texture2D> textureList = new List<Texture2D>();
                 // Get all of the web textures
-                WebCamTexture[] feeds = GameObject.Find("WebCamManager").GetComponent<WebCamManager>().VideoFeeds;
-                for(int i = 0; i < feeds.Length; i++)
+                //WebCamTexture[] feeds = GameObject.Find("WebCamManager").GetComponent<WebCamManager>().VideoFeeds;
+                for (int i = 0; i < feeds.Length; i++)
                 {
-                    SendTexture(feeds[i], clientSocket);
+                    //SendTexture(feeds[i], clientSocket);
+                    SendTexture(widths[i], heights[i], pixelsList[i], names[i], clientSocket);
                 }
             }
         }
-        
+
         ~SocketServer_PC()
         {
             listener.Server.Disconnect(false);

@@ -11,23 +11,25 @@ namespace ARPortal
 {
     public class SocketClient_Android : Socket_Base_PC
     {
-        public static List<Texture2D> ReceivedTextureList;
+        //public static List<Texture2D> ReceivedTextureList;
+        public static List<MemoryStream> ReceivedTextureBytesList;
         private static Semaphore _pool;
 
         static SocketClient_Android()
         {
-            ReceivedTextureList = new List<Texture2D>();
-            _pool = new Semaphore(0, 1);
+            //ReceivedTextureList = new List<Texture2D>();
+            ReceivedTextureBytesList = new List<MemoryStream>();
+            _pool = new Semaphore(1, 1);
             //Thread.Sleep(500); // Wait for half a second to allow all threads to start and block on semaphore
         }
 
 #if !UNITY_WSA_10_0
-        public static List<Texture2D> RequestData(int port)
+        public static void RequestData(int port)
         {
-            return RequestData(ServerFinder.serverIP, port);
+            RequestData(ServerFinder.serverIP, port);
         }
 
-        public static List<Texture2D> RequestData(string serverIP, int port)
+        public static void RequestData(string serverIP, int port)
         {
             new Thread(() =>
             {
@@ -46,26 +48,73 @@ namespace ARPortal
                 // After awaiting the connection, receive data appropriately
                 Socket socket = client.Client;
                 _pool.WaitOne();
-                ReceivedTextureList = ReceiveTexture(socket);
+                MultiThreadDebug.Log("Attempting to launch reception of texture");
+                //ReceivedTextureList = ReceiveTexture(socket);
+                //List<Texture2D> receivedTextureList = ReceiveTexture(socket);
+                List<MemoryStream> receivedTextureBytesList = ReceiveTextureBytes(socket);
+                MultiThreadDebug.Log("Received " + receivedTextureBytesList.Count.ToString() + " memorystreams directly in other thread.");
+                if(receivedTextureBytesList.Count > 0)
+                {
+                    ReceivedTextureBytesList = new List<MemoryStream>();
+                    for(int i = 0; i < receivedTextureBytesList.Count; i++)
+                    {
+                        MemoryStream ms = new MemoryStream(receivedTextureBytesList[i].ToArray());
+                        ReceivedTextureBytesList.Add(ms);
+                    }
+                    //ReceivedTextureBytesList = receivedTextureBytesList;
+                }
                 _pool.Release();
+                MultiThreadDebug.Log("Pool released and updated texture bytes list");
 
-                socket.Shutdown(SocketShutdown.Both);
+                client.GetStream().Close();
+                MultiThreadDebug.Log("ClientStream closed");
+                //socket.Shutdown(SocketShutdown.Both);
+                MultiThreadDebug.Log("Socket shutdown.");
                 socket.Close();
+                MultiThreadDebug.Log("Socket closed");
+                client.Close();
+                MultiThreadDebug.Log("Socket and client closed for texture reception");
             }).Start();
+            
+            ////_pool.WaitOne();
+            //Texture2D[] texArr = new Texture2D[ReceivedTextureList.Count];
+            //ReceivedTextureList.CopyTo(texArr);
+            //if(ReceivedTextureList.Count > 0)
+            //{
+            //    Debug.Log("Received texture was actually received.");
+            //}
+            //_pool.Release();
 
+            //return new List<Texture2D>(texArr);
+        }
+
+        public static List<Texture2D> GrabTextures()
+        {
+            // Generating textures has to be done from the main thread. Unity throws an exception if you try to do it in any other thread.
             _pool.WaitOne();
-            Texture2D[] texArr = new Texture2D[ReceivedTextureList.Count];
-            ReceivedTextureList.CopyTo(texArr);
-            _pool.Release(1);
+            List<Texture2D> texList = new List<Texture2D>();
+            for (int i = 0; i < ReceivedTextureBytesList.Count; i++)
+            {
+                Debug.Log("Generating texture from memory stream [" + i + "]");
+                Texture2D tex = TexturePacket.ReadFromBytes(ReceivedTextureBytesList[i].ToArray());
+                texList.Add(tex);
+                Debug.Log("Finished generating texture from memory stream for MS[" + i + "]");
+            }
+            _pool.Release();
 
-            return new List<Texture2D>(texArr);
+            if (ReceivedTextureBytesList.Count > 0)
+            {
+                Debug.Log("Received " + ReceivedTextureBytesList.Count.ToString() + " textures");
+            }
+            
+            return texList;
         }
 
         public static void ReleaseSemaphores()
         {
             if(_pool != null)
             {
-                _pool.Release(1);
+                _pool.Release();
             }
         }
 

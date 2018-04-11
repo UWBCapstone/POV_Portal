@@ -9,19 +9,35 @@ namespace ARPortal
 {
     public class Socket_Base_PC
     {
+        public static int debugBlockID_ProcessStream = 3;
+        public static int debugBlockID_ProcessBuffer = 2;
+        public static int debugBlockID_GenerateTexture = 1;
+
+
 #if !UNITY_WSA_10_0
         public static void SendTexture(Texture2D tex, Socket socket)
         {
             TexturePacket packet = new TexturePacket(tex);
             socket.Send(packet.bytes);
             // Do we shut down for this implementation?
-            //socket.Shutdown(SocketShutdown.Both);
+            socket.Shutdown(SocketShutdown.Both);
+            socket.Close();
         }
 
         public static void SendTexture(WebCamTexture feed, Socket socket)
         {
             TexturePacket packet = new TexturePacket(feed);
             socket.Send(packet.bytes);
+            socket.Shutdown(SocketShutdown.Both);
+            socket.Close();
+        }
+
+        public static void SendTexture(int width, int height, Color[] pixels, string name, Socket socket)
+        {
+            TexturePacket packet = new TexturePacket(width, height, pixels, name);
+            socket.Send(packet.bytes);
+            socket.Shutdown(SocketShutdown.Both);
+            socket.Close();
         }
 
         public static List<Texture2D> ReceiveTexture(Socket socket)
@@ -30,10 +46,20 @@ namespace ARPortal
             List<MemoryStream> msList = ReadStream(socket);
             for (int i = 0; i < msList.Count; i++)
             {
+                MultiThreadDebug.Log("Generating texture from memory stream [" + i + "]");
                 Texture2D tex = TexturePacket.ReadFromBytes(msList[i].ToArray());
                 texList.Add(tex);
+                MultiThreadDebug.Log("Finished generating texture from memory stream for MS[" + i + "]");
             }
+            ServerFinder.displayMsg = "Contained " + msList.Count.ToString() + " memorystreams";
+            MultiThreadDebug.Log("Received " + msList.Count.ToString() + " textures");
             return texList;
+        }
+
+        public static List<MemoryStream> ReceiveTextureBytes(Socket socket)
+        {
+            MultiThreadDebug.Log("Receiving Texture bytes...", debugBlockID_GenerateTexture);
+            return ReadStream(socket);
         }
 
         public static List<MemoryStream> ReadStream(Socket socket)
@@ -42,37 +68,55 @@ namespace ARPortal
             int bufferLength = 1024;
             byte[] buffer = new byte[bufferLength];
             bool packetInitiated = false;
-            int textureIndex = 0;
+            int textureCount = 0;
 
             MemoryStream ms = new MemoryStream();
             int bytesRemainingForPacket = 0;
+            int DEBUGCOUNTER = 0;
             while (true)
             {
                 int numBytesReceived = socket.Receive(buffer, bufferLength, SocketFlags.None);
                 ms.Write(buffer, 0, numBytesReceived);
 
-                if (numBytesReceived <= 0
-                    && bytesRemainingForPacket == 0)
-                {
-                    break;
-                }
+                ServerFinder.displayMsg = "NumBytesReceived = " + numBytesReceived.ToString() + "(" + DEBUGCOUNTER + ")";
+                DEBUGCOUNTER += numBytesReceived;
+                MultiThreadDebug.Log("Received packet!...NumBytesReceived = " + numBytesReceived.ToString() + "(total received = " + DEBUGCOUNTER + ")", debugBlockID_ProcessStream);
+
+                //if (numBytesReceived <= 0
+                //    && bytesRemainingForPacket == 0)
+                //{
+                //    ServerFinder.displayMsg = "Breaking out of while loop!";
+                //    MultiThreadDebug.Log("Breaking out of packet reading while loop!");
+                //    break;
+                //}
 
                 int appendIndex = 0;
                 bool wasPreviouslyInitiated = packetInitiated;
                 List<MemoryStream> appendList = ProcessTexturePacket(ref packetInitiated, ref bytesRemainingForPacket, numBytesReceived, buffer);
                 if (wasPreviouslyInitiated)
                 {
+                    MultiThreadDebug.Log("Packet previously initiated! Appending to previous memorystream...", debugBlockID_ProcessStream);
                     // Add first memory stream to existing memory stream
-                    MemoryStream previousMS = msList[textureIndex];
+                    MemoryStream previousMS = msList[textureCount-1];
                     previousMS.Write(appendList[0].ToArray(), 0, appendList[0].ToArray().Length);
                     appendIndex++;
+                    MultiThreadDebug.Log("Appended packet info to previous memorystream!", debugBlockID_ProcessStream);
                 }
                 // Add other memory streams
                 for (; appendIndex < appendList.Count; appendIndex++)
                 {
                     msList.Add(appendList[appendIndex]);
-                    textureIndex++;
+                    textureCount++;
+                    MultiThreadDebug.Log("Appending new texture packet memory streams to memory stream list. textureIndex now = " + textureCount, debugBlockID_ProcessStream);
                 }
+
+                if(numBytesReceived < bufferLength
+                    && packetInitiated == false)
+                {
+                    // If you've gotten a partially empty receive and you've finished reading in a texture packet, don't wait on another receive or you'll block and freeze the program
+                    break;
+                }
+                MultiThreadDebug.Log("Finished processing buffer for texture packet. Looping...", debugBlockID_ProcessStream);
             }
 
             return msList;
@@ -84,6 +128,8 @@ namespace ARPortal
         /// <returns></returns>
         public static List<MemoryStream> ProcessTexturePacket(ref bool packetInitiated, ref int bytesRemainingForPacket, int numBytesAvailable, byte[] buffer)
         {
+            MultiThreadDebug.Log("Processing packet...\tpacketInitiated = " + packetInitiated + "; bytesRemainingForPacket = " + bytesRemainingForPacket + "; numByteAvailable = " + numBytesAvailable, debugBlockID_ProcessBuffer);
+
             List<MemoryStream> msList = new List<MemoryStream>();
             MemoryStream ms = new MemoryStream();
             int byteIndex = 0;
@@ -92,29 +138,51 @@ namespace ARPortal
             {
                 if (!packetInitiated)
                 {
-                    bytesRemainingForPacket = BitConverter.ToInt32(buffer, byteIndex);
+                    int headerSize = BitConverter.ToInt32(buffer, byteIndex);
+                    byte[] headerBytes = new byte[headerSize];
+                    Array.Copy(buffer, byteIndex, headerBytes, 0, headerSize);
+
+                    int headerSizeRead;
+                    int nameSize;
+                    int width;
+                    int height;
+                    int contentSize;
+                    TexturePacket.ReadHeader(headerBytes, out headerSizeRead, out nameSize, out width, out height, out contentSize);
+
+                    //bytesRemainingForPacket = BitConverter.ToInt32(buffer, byteIndex);
+                    bytesRemainingForPacket = headerSizeRead + nameSize + contentSize;
                     // Don't increment the byteIndex, because it still needs to 
                     // get processed by TexturePacket class, so we don't want 
                     // to pass over the headerSize int
                     ms = new MemoryStream();
                     packetInitiated = !packetInitiated;
+
+                    MultiThreadDebug.Log("New texture packet started...(bytesRemainingForPacket = " + bytesRemainingForPacket + ")...", debugBlockID_ProcessBuffer);
                 }
                 // Read the bytes
                 if (bytesRemainingForPacket > numBytesAvailable)
                 {
+                    MultiThreadDebug.Log("Reading all bytes in buffer...bytesRemainingForPacket = " + bytesRemainingForPacket + "...numBytesAvailable = " + numBytesAvailable, debugBlockID_ProcessBuffer);
+
                     ms.Write(buffer, byteIndex, numBytesAvailable);
                     msList.Add(ms);
                     byteIndex += numBytesAvailable;
+                    bytesRemainingForPacket -= numBytesAvailable;
                     numBytesAvailable -= numBytesAvailable;
+                    
                     break;
                 }
-                else if(bytesRemainingForPacket == numBytesAvailable)
+                else if (bytesRemainingForPacket == numBytesAvailable)
                 {
+                    MultiThreadDebug.Log("Reading all bytes in buffer...bytesRemainingForPacket = " + bytesRemainingForPacket + "...numBytesAvailable = " + numBytesAvailable, debugBlockID_ProcessBuffer);
+
                     ms.Write(buffer, byteIndex, numBytesAvailable);
                     msList.Add(ms);
                     byteIndex += numBytesAvailable;
+                    bytesRemainingForPacket -= numBytesAvailable;
                     numBytesAvailable -= numBytesAvailable;
                     packetInitiated = false;
+
                     break;
                 }
                 else
@@ -124,9 +192,16 @@ namespace ARPortal
                     msList.Add(ms);
                     byteIndex += bytesRemainingForPacket;
                     numBytesAvailable -= bytesRemainingForPacket;
+                    bytesRemainingForPacket -= bytesRemainingForPacket;
                     packetInitiated = false;
                     // repeat
+
+                    MultiThreadDebug.Log("Finishing packet...bytesRemainingForPacket = " + bytesRemainingForPacket + " (should be 0)", debugBlockID_ProcessBuffer);
                 }
+                ServerFinder.displayMsg = "numBytesAvailable = " + numBytesAvailable.ToString();
+
+                MultiThreadDebug.Log("Looping in ProcessTexturePacket...(numBytesAvailable = " + numBytesAvailable + ")...(bytesRemainingForPacket = " + bytesRemainingForPacket + ")...(byteIndex = " + byteIndex + ")...(packetInitiated? = " + packetInitiated + ")", debugBlockID_ProcessBuffer);
+
             }
 
             return msList;

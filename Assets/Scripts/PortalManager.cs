@@ -23,7 +23,7 @@ namespace ARPortal
         {
             for(int i = 0; i < PortalList.Count; i++)
             {
-                if(TextureList.Count >= PortalList.Count)
+                if(TextureList.Count >= i)
                 {
                     PortalScript ps = PortalList[i].GetComponent<PortalScript>();
                     ps.UpdateTexture(TextureList[i]);
@@ -38,6 +38,11 @@ namespace ARPortal
         /// <param name="texList"></param>
         public void UpdateTextures(List<Texture2D> texList)
         {
+            if (texList.Count > 0)
+            {
+                Debug.Log("UpdateTextures called by NetworkManager");
+            }
+
             bool texFound = false;
 
             for(int i = 0; i < texList.Count; i++)
@@ -46,16 +51,18 @@ namespace ARPortal
                 for(int j = 0; j < TextureList.Count; j++)
                 {
                     Texture2D storedTex = TextureList[j];
-                    if (tex.name.Equals(storedTex))
+                    if (tex.name.Equals(storedTex.name))
                     {
                         TextureList[j] = tex;
                         texFound = true;
                         break;
                     }
                 }
-                if (!texFound)
+                //if (!texFound)
+                if(true)
                 {
                     TextureList.Add(tex);
+                    Debug.Log("Adding texture to texture list in portalManager");
                 }
             }
         }

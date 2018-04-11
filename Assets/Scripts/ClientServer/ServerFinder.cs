@@ -12,6 +12,7 @@ namespace ARPortal
     {
         public static string serverIP;
         private static Thread thread_AcceptClient;
+        public static string displayMsg = "";
 
 #if !UNITY_WSA_10_0
         public static UdpClient listener;
@@ -44,6 +45,7 @@ namespace ARPortal
                     byte[] clientIPBytes = listener.Receive(ref clientEndpoint);
                     //string clientIPString = Encoding.UTF8.GetString(clientIPBytes);
                     listener.Send(serverIPBytes, serverIPBytes.Length, clientEndpoint);
+                    displayMsg = "Client accepted!";
                 }
             });
 
@@ -56,15 +58,24 @@ namespace ARPortal
             string IPString = string.Empty;
 
             UdpClient client = new UdpClient();
+            Debug.Log("Checkpoint 1");
             client.EnableBroadcast = true;
             int findServerPort = Port.FindServer.PortNumber;
             IPEndPoint serverEndpoint = new IPEndPoint(IPAddress.Broadcast, findServerPort);
+            Debug.Log("Checkpoint 2");
             byte[] clientIPBytes = Encoding.UTF8.GetBytes(IPManager.GetLocalIPAddress().ToString());
             client.Send(clientIPBytes, clientIPBytes.Length, serverEndpoint);
             byte[] serverIPBytes = client.Receive(ref serverEndpoint);
 
+            Debug.Log("Checkpoint 3");
+
             IPString = Encoding.UTF8.GetString(serverIPBytes);
             serverIP = IPString;
+
+            Debug.Log("Checkpoint 4");
+
+            client.Close();
+
             return IPString;
         }
 

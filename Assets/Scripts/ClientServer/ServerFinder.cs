@@ -46,6 +46,7 @@ namespace ARPortal
                     //string clientIPString = Encoding.UTF8.GetString(clientIPBytes);
                     listener.Send(serverIPBytes, serverIPBytes.Length, clientEndpoint);
                     displayMsg = "Client accepted!";
+                    MultiThreadDebug.Log("Client accepted! (" + clientEndpoint.Address + ")");
                 }
             });
 
@@ -62,6 +63,7 @@ namespace ARPortal
             client.EnableBroadcast = true;
             int findServerPort = Port.FindServer.PortNumber;
             IPEndPoint serverEndpoint = new IPEndPoint(IPAddress.Broadcast, findServerPort);
+            //IPEndPoint serverEndpoint = new IPEndPoint(IPAddress.Parse("192.168.2.2"), findServerPort);
             Debug.Log("Checkpoint 2");
             byte[] clientIPBytes = Encoding.UTF8.GetBytes(IPManager.GetLocalIPAddress().ToString());
             client.Send(clientIPBytes, clientIPBytes.Length, serverEndpoint);

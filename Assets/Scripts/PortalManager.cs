@@ -7,6 +7,7 @@ namespace ARPortal
     public class PortalManager : MonoBehaviour
     {
         public const int MaxPortals = 3;
+        public WebCamManager webcamManager;
         public GameObject MainCamera;
         public List<GameObject> PortalList;
         public List<Texture2D> TextureList;
@@ -21,9 +22,12 @@ namespace ARPortal
 
         public void Update()
         {
+            List<Texture2D> feedList = FeedTextureTranslator.GetTexturesFrom(new List<WebCamTexture>(webcamManager.VideoFeeds));
+            UpdateTextures(feedList);
+
             for(int i = 0; i < PortalList.Count; i++)
             {
-                if(TextureList.Count >= i)
+                if(TextureList.Count > i)
                 {
                     PortalScript ps = PortalList[i].GetComponent<PortalScript>();
                     ps.UpdateTexture(TextureList[i]);
@@ -38,11 +42,6 @@ namespace ARPortal
         /// <param name="texList"></param>
         public void UpdateTextures(List<Texture2D> texList)
         {
-            if (texList.Count > 0)
-            {
-                Debug.Log("UpdateTextures called by NetworkManager");
-            }
-
             bool texFound = false;
 
             for(int i = 0; i < texList.Count; i++)
@@ -58,8 +57,8 @@ namespace ARPortal
                         break;
                     }
                 }
-                //if (!texFound)
-                if(true)
+                if (!texFound)
+                //if(true)
                 {
                     TextureList.Add(tex);
                     Debug.Log("Adding texture to texture list in portalManager");

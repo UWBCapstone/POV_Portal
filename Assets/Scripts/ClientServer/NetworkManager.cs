@@ -76,6 +76,7 @@ namespace ARPortal
         {
             if (!DisableNetworking)
             {
+#if UNITY_ANDROID
                 // Get updated textures
                 //List<Texture2D> texList = SocketClient_Android.RequestData(Port.SendWebCamData.PortNumber);
                 SocketClient_Android.RequestData(Port.SendWebCamData.PortNumber);
@@ -85,6 +86,7 @@ namespace ARPortal
 
                 // Update the textures being used for the portal
                 portalManager.UpdateTextures(texList);
+#endif
             }
         }
     }

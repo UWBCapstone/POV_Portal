@@ -1,11 +1,16 @@
-﻿Shader "Custom/ImageShader"
+﻿Shader "Custom/MyVideoOverlayShader"
 {
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
+		_WorldTex("Texture", 2D) = "white" {}
 	}
 	SubShader
 	{
+
+		// No culling or depth
+		//Cull Off ZWrite Off ZTest Always
+
 		Tags { "RenderType"="Opaque" }
 		LOD 100
 
@@ -34,6 +39,10 @@
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
+			sampler2D _WorldTex;
+			float4 _WorldTex_ST;
+			sampler2D _CameraDepthTexture;
+			float4 _CameraDepthTexture_ST;
 			
 			v2f vert (appdata v)
 			{
@@ -47,7 +56,16 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = tex2D(_MainTex, i.uv);
+				fixed4 videoCol = tex2D(_MainTex, i.uv);
+				fixed4 depth = tex2D(_CameraDepthTexture, i.uv);
+				fixed4 worldCol = tex2D(_WorldTex, i.uv);
+
+				//fixed4 col = step(0, depth) * videoCol + (1 - step(0, depth)) * worldCol;
+				//fixed4 col = step(0, depth) * videoCol;
+				//fixed4 col = videoCol;
+				float isWorld = step(0.001, depth.x) + step(0.001, depth.y) + step(0.001, depth.z);
+				fixed4 col = step(0.001, isWorld) * worldCol + (1-(step(0.001, isWorld))) * videoCol;
+
 				// apply fog
 				UNITY_APPLY_FOG(i.fogCoord, col);
 				return col;

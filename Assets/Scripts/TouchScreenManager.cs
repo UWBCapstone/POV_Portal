@@ -6,11 +6,11 @@ namespace ARPortal
 {
     public class TouchScreenManager : MonoBehaviour
     {
-        public static PortalCreator portalCreator;
+        public PortalCreator portalCreator;
         
         public void Awake()
         {
-            portalCreator = new PortalCreator();
+            //portalCreator = new PortalCreator();
 
             //
             //GameObject portal = portalCreator.GeneratePortal();

@@ -36,6 +36,11 @@ namespace ARPortal
         public GameObject GeneratePortal()
         {
             GameObject portal = generatePortalObject();
+            GameObject window = generateWindow(portal);
+            window.transform.parent = portal.transform;
+            window.transform.localPosition = Vector3.zero;
+            window.transform.localRotation = Quaternion.identity;
+
             //SetAsActivePortal(portal);
             portalManager.RegisterPortal(portal);
 
@@ -150,6 +155,7 @@ namespace ARPortal
             Vector3 tangoCamPos = mainCam.transform.position;
             Vector3 tangoCamDir = mainCam.transform.forward;
 
+#if UNITY_ANDROID
             // Get the room mesh
             Mesh roomMesh = getRoomMesh();
 
@@ -164,11 +170,32 @@ namespace ARPortal
             portalPos = new Vector3(0, 0, 0.5f);
 
             // Set the portal's orientation to be the same as the camera's
-            Quaternion portalRot = mainCam.transform.rotation;
+            GameObject tempObj = new GameObject();
+            Quaternion camRot = mainCam.transform.rotation;
+            Quaternion portalRot = new Quaternion(camRot.x, camRot.y, camRot.z, camRot.w); // Make a copy of the rotation at this point in time
+            Vector3 camUp = mainCam.transform.up;
+            tempObj.transform.rotation = portalRot;
+            tempObj.transform.Rotate(camUp, 180);
+            portalRot = tempObj.transform.rotation;
+            GameObject.Destroy(tempObj);
+            
+            //Quaternion portalRot = mainCam.transform.rotation;
 
             PortalTransform portalTransform = new PortalTransform();
             portalTransform.pos = portalPos;
             portalTransform.rot = portalRot;
+#else
+            Vector3 tangoCamUp = mainCam.transform.up;
+
+            PortalTransform portalTransform = new PortalTransform();
+            portalTransform.pos = tangoCamPos + tangoCamDir * 3.0f;
+            //portalTransform.rot = Quaternion.identity;
+
+            GameObject tempObj = new GameObject();
+            tempObj.transform.Rotate(tangoCamUp, 180);
+            portalTransform.rot = tempObj.transform.rotation;
+            GameObject.Destroy(tempObj);
+#endif
 
             return portalTransform;
         }
@@ -212,6 +239,151 @@ namespace ARPortal
         public GameObject GetMainCamera()
         {
             return GameObject.Find(MainCameraName);
+        }
+
+        private GameObject generateWindow(GameObject portal)
+        {
+            if (portal != null)
+            {
+                GameObject window = new GameObject();
+                window.SetActive(false);
+                window.name = "Window";
+
+                // generate frame
+                GameObject frame = generateWindowFrame(portal);
+                frame.transform.parent = window.transform;
+                frame.transform.localPosition = Vector3.zero;
+
+                // generate stiles
+                GameObject stiles = generateWindowStiles(portal);
+                stiles.transform.parent = window.transform;
+                stiles.transform.localPosition = Vector3.zero;
+                
+                window.SetActive(true);
+                return window;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private GameObject generateWindowFrame(GameObject portal)
+        {
+            if (portal != null)
+            {
+                MeshFilter mf = portal.GetComponent<MeshFilter>();
+                if(mf != null)
+                {
+                    Mesh m = mf.mesh;
+                    if(m != null)
+                    {
+                        GameObject frame = new GameObject();
+                        frame.SetActive(false);
+                        frame.name = "WindowFrame";
+
+                        Vector3 extents = m.bounds.extents;
+
+                        // Set the frame dimensions
+                        float frameWidth = extents.x / 8.0f;
+                        float frameDepth = frameWidth;
+                        Color frameColor = new Color(60 / 255.0f, 40 / 255.0f, 0);
+                        //Color frameColor = Color.blue;
+                        float windowWidth = extents.x * 2;
+                        float windowHeight = extents.y * 2;
+
+                        // Get the frame pieces
+                        GameObject leftFramePiece = generateWindowFramePiece(frameWidth, windowHeight + frameWidth, frameDepth, frameColor);
+                        leftFramePiece.name = "LeftWindowFrame";
+                        GameObject rightFramePiece = generateWindowFramePiece(frameWidth, windowHeight + frameWidth, frameDepth, frameColor); ;
+                        rightFramePiece.name = "RightWindowFrame";
+                        GameObject topFramePiece = generateWindowFramePiece(windowWidth + frameWidth, frameWidth, frameDepth, frameColor);
+                        topFramePiece.name = "TopWindowFrame";
+                        GameObject bottomFramePiece = generateWindowFramePiece(windowWidth + frameWidth, frameWidth, frameDepth, frameColor);
+                        bottomFramePiece.name = "BottomWindowFrame";
+
+                        // Make them the children of the frame object
+                        leftFramePiece.transform.parent = frame.transform;
+                        rightFramePiece.transform.parent = frame.transform;
+                        topFramePiece.transform.parent = frame.transform;
+                        bottomFramePiece.transform.parent = frame.transform;
+
+                        // Arrange the pieces correctly
+                        Vector3 right = portal.transform.right;
+                        Vector3 up = portal.transform.up;
+                        leftFramePiece.transform.localPosition = -right * windowWidth / 2.0f;
+                        rightFramePiece.transform.localPosition = right * windowWidth / 2.0f;
+                        topFramePiece.transform.localPosition = up * windowHeight / 2.0f;
+                        bottomFramePiece.transform.localPosition = -up * windowHeight / 2.0f;
+
+                        frame.SetActive(true);
+                        return frame;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private GameObject generateWindowFramePiece(float width, float height, float depth, Color frameColor)
+        {
+            GameObject windowFramePiece = new GameObject();
+            windowFramePiece.SetActive(false);
+            windowFramePiece.name = "WindowFramePiece";
+
+            var mf = windowFramePiece.AddComponent<MeshFilter>();
+            mf.mesh = cubeMesh;
+            windowFramePiece.transform.localScale = new Vector3(width, height, depth);
+            var mr = windowFramePiece.AddComponent<MeshRenderer>();
+            mr.material = new Material(Shader.Find("Standard"));
+            mr.material.SetColor("_Color", frameColor);
+
+            windowFramePiece.SetActive(true);
+            return windowFramePiece;
+        }
+
+        private GameObject generateWindowStiles(GameObject portal)
+        {
+            if (portal!= null)
+            {
+                MeshFilter mf = portal.GetComponent<MeshFilter>();
+                if (mf != null)
+                {
+                    Mesh m = mf.mesh;
+                    if (m != null)
+                    {
+                        GameObject stiles = new GameObject();
+                        stiles.SetActive(false);
+                        stiles.name = "WindowStiles";
+
+                        Vector3 extents = m.bounds.extents;
+
+                        // Set the frame dimensions
+                        float stileWidth = extents.x / 10.0f;
+                        float stileDepth = stileWidth;
+                        Color stileColor = Color.white;
+                        float windowWidth = extents.x * 2;
+                        float windowHeight = extents.y * 2;
+
+                        // Get the frame pieces
+                        GameObject horizontalStile = generateWindowFramePiece(windowWidth, stileWidth, stileDepth, stileColor);
+                        horizontalStile.name = "HorizontalStile";
+                        GameObject verticalStile = generateWindowFramePiece(stileWidth, windowHeight, stileDepth, stileColor); ;
+                        verticalStile.name = "VerticalStile";
+
+                        // Make them the children of the frame object
+                        horizontalStile.transform.parent = stiles.transform;
+                        verticalStile.transform.parent = stiles.transform;
+
+                        // Pieces are already arranged correctly
+
+                        stiles.SetActive(true);
+                        return stiles;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

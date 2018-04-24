@@ -21,6 +21,8 @@ namespace ARPortal
     public class PortalCreator : MonoBehaviour
     {
         public string MainCameraName = "Tango Camera";
+        public float PortalFOV = 120f;
+        public Vector3 StartPosition;
         public PortalManager portalManager;
         public static Mesh cubeMesh;
 
@@ -33,6 +35,13 @@ namespace ARPortal
             GameObject.Destroy(tempCube);
         }
 
+        public GameObject GeneratePortal(Vector3 pos)
+        {
+            GameObject portal = GeneratePortal();
+            portal.transform.position = pos;
+            return portal;
+        }
+
         public GameObject GeneratePortal()
         {
             GameObject portal = generatePortalObject();
@@ -40,6 +49,9 @@ namespace ARPortal
             window.transform.parent = portal.transform;
             window.transform.localPosition = Vector3.zero;
             window.transform.localRotation = Quaternion.identity;
+
+            // Reposition
+            portal.transform.position = StartPosition;
 
             //SetAsActivePortal(portal);
             portalManager.RegisterPortal(portal);
@@ -138,7 +150,7 @@ namespace ARPortal
             {
                 portalCam.nearClipPlane = 0.3f;
                 portalCam.farClipPlane = 1000f;
-                portalCam.fieldOfView = 120;
+                portalCam.fieldOfView = PortalFOV;
                 portalCam.depth = -1;
             }
         }

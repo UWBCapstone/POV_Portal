@@ -9,6 +9,7 @@ namespace ARPortal
         public Camera MainCamera;
         public Camera RenderCamera;
         public WebCamManager webCamManager;
+        public WebcamDeviceNames BackgroundCamera;
         public WebCamTexture camFeed;
         public Texture2D VideoTexture;
         public Texture2D WorldTexture;
@@ -28,7 +29,8 @@ namespace ARPortal
             {
                 if (webCamManager.NumWebCams > 0)
                 {
-                    camFeed = webCamManager.VideoFeeds[webCamManager.NumVideoFeeds-1];
+                    //camFeed = webCamManager.VideoFeeds[webCamManager.NumVideoFeeds-1];
+                    camFeed = webCamManager.GetTextureFor(BackgroundCamera);
                 }
             }
             VideoTexture = FeedTextureTranslator.GetTextureFrom(camFeed);

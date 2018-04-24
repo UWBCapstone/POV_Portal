@@ -58,7 +58,22 @@
 
 			fixed4 frag(v2f i) : SV_Target
 			{
-				fixed4 c = tex2D(_MainTex, i.uv_MainTex);
+				/*fixed4 c = tex2D(_MainTex, i.uv_MainTex);
+
+				return c;*/
+
+				// Albedo comes from a texture tinted by color
+				float2 true_uv = i.uv_MainTex;
+				//float uvx = abs(abs(2 * (.5 - i.uv_MainTex.x)) - 1) * (_uvLR.x - _uvLL.x) + _uvLL.x;
+				float uvx = i.uv_MainTex.x * (_uvLR.x - _uvLL.x) + _uvLL.x;
+				float uvy = i.uv_MainTex.y * (_uvUL.y - _uvLL.y) + _uvLL.y;
+
+				// Fix curving of uv values (?)
+				// y = a ln(x) + b -> a = 0.22658359707 and b = 1.56518403879
+				true_uv.x = uvx;
+				true_uv.y = uvy;
+
+				fixed4 c = tex2D(_MainTex, true_uv);
 
 				return c;
 			}

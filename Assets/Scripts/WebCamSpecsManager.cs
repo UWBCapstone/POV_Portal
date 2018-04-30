@@ -9,7 +9,8 @@ namespace ARPortal
         NULL,
         LOGITECH_C920,
         ADESSO_CYBERTRACK_V10,
-        LAPTOP_WEBCAM
+        LAPTOP_WEBCAM,
+        KINECT_2
     };
 
     public struct WebCamSpecs
@@ -149,6 +150,27 @@ namespace ARPortal
                         VerticalResolution);
 
                     break;
+                case WebcamDeviceNames.KINECT_2:
+                    HorizontalFOV = 57.0f;
+                    VerticalFOV = 43.0f;
+                    NearClippingPlane = DefaultNearClippingPlane;
+                    FarClippingPlane = DefaultFarClippingPlane;
+                    WebcamDeviceName = WebcamDeviceNames.KINECT_2;
+                    DeviceName = WebcamDeviceName.ToString();
+                    HorizontalResolution = 1920;
+                    VerticalResolution = 1080;
+
+                    camSpecs = new WebCamSpecs(
+                        HorizontalFOV,
+                        VerticalFOV,
+                        NearClippingPlane,
+                        FarClippingPlane,
+                        WebcamDeviceName,
+                        DeviceName,
+                        HorizontalResolution,
+                        VerticalResolution);
+
+                    break;
                 case WebcamDeviceNames.NULL:
                     HorizontalFOV = 0.0f;
                     VerticalFOV = 0.0f;
@@ -195,6 +217,10 @@ namespace ARPortal
             else if(deviceName.ToLower().Contains("Integrated Webcam".ToLower()))
             {
                 return WebcamDeviceNames.LAPTOP_WEBCAM;
+            }
+            else if(deviceName.ToLower().Contains("Kinect V2 Video Sensor".ToLower()))
+            {
+                return WebcamDeviceNames.KINECT_2;
             }
             else
             {

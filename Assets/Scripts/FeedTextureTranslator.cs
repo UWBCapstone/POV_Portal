@@ -22,6 +22,7 @@ namespace ARPortal
             if (feed != null)
             {
                 Texture2D tex = new Texture2D(feed.width, feed.height, TextureFormat.RGBA32, false);
+                tex.wrapMode = TextureWrapMode.Clamp;
                 tex.SetPixels(feed.GetPixels());
                 tex.Apply();
 

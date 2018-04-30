@@ -4,6 +4,9 @@
 	{
 		_MainTex ("Texture", 2D) = "white" {}
 		_WorldTex("Texture", 2D) = "white" {}
+		_BGUVLL("LowerLeftUV", Vector) = (0,0,0,0)
+		_BGUVUL("UpperLeftUV", Vector) = (0,0,0,0)
+		_BGUVLR("LowerRightUV", Vector) = (0,0,0,0)
 	}
 	SubShader
 	{
@@ -44,6 +47,10 @@
 			sampler2D _CameraDepthTexture;
 			float4 _CameraDepthTexture_ST;
 			
+			float4 _BGUVLL;
+			float4 _BGUVLR;
+			float4 _BGUVUL;
+
 			v2f vert (appdata v)
 			{
 				v2f o;
@@ -56,7 +63,22 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 videoCol = tex2D(_MainTex, i.uv);
+				
+				// Get the video BG based on passed in video corner texture coordinates
+				//fixed4 videoCol = tex2D(_MainTex, i.uv);
+				float2 video_uv = i.uv;
+				//float uvx = abs(abs(2 * (.5 - i.uv_MainTex.x)) - 1) * (_uvLR.x - _uvLL.x) + _uvLL.x;
+				float uvx = i.uv.x * (_BGUVLR.x - _BGUVLL.x) + _BGUVLL.x;
+				float uvy = i.uv.y * (_BGUVUL.y - _BGUVLL.y) + _BGUVLL.y;
+
+				// Fix curving of uv values (?)
+				// y = a ln(x) + b -> a = 0.22658359707 and b = 1.56518403879
+				video_uv.x = uvx;
+				video_uv.y = uvy;
+
+				fixed4 videoCol = tex2D(_MainTex, video_uv);
+
+				// Get the world BG
 				fixed4 depth = tex2D(_CameraDepthTexture, i.uv);
 				fixed4 worldCol = tex2D(_WorldTex, i.uv);
 

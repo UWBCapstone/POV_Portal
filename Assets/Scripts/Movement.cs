@@ -39,7 +39,14 @@ namespace ARPortal
             }
             if (Input.GetKey(KeyCode.S))
             {
-                gameObject.transform.Translate(Movement.DownDelta);
+                if(gameObject.transform.position.z <= 0)
+                {
+                    gameObject.transform.position = new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, 0);
+                }
+                else
+                {
+                    gameObject.transform.Translate(Movement.DownDelta);
+                }
             }
             if (Input.GetKey(KeyCode.D))
             {

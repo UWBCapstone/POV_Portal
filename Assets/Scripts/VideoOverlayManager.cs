@@ -15,12 +15,16 @@ namespace ARPortal
         public Texture2D WorldTexture;
         public Material WebCamFeedMaterial;
 
+        private Rect r;
+
         public void Awake()
         {
             RenderTexture rt = new RenderTexture(RenderCamera.pixelWidth, RenderCamera.pixelHeight, 0);
             RenderCamera.targetTexture = rt;
             RenderCamera.Render();
             WorldTexture = new Texture2D(rt.width, rt.height, TextureFormat.RGBA32, false);
+            
+            r = new Rect(0, 0, RenderCamera.pixelWidth, RenderCamera.pixelHeight);
         }
 
         public void Update()
@@ -37,7 +41,8 @@ namespace ARPortal
             WebCamFeedMaterial.SetTexture("_MainTex", VideoTexture);
             
             RenderTexture.active = RenderCamera.targetTexture;
-            WorldTexture.ReadPixels(new Rect(0, 0, RenderCamera.pixelWidth, RenderCamera.pixelHeight), 0, 0);
+            //WorldTexture.ReadPixels(new Rect(0, 0, RenderCamera.pixelWidth, RenderCamera.pixelHeight), 0, 0);
+            WorldTexture.ReadPixels(r, 0, 0);
             WorldTexture.Apply();
             RenderTexture.active = null;
 

@@ -22,6 +22,7 @@ namespace ARPortal
     {
         public string MainCameraName = "Tango Camera";
         public float PortalFOV = 120f;
+        public float ImageDistance = 1000f;
         public Vector3 StartPosition;
         public PortalManager portalManager;
         public static Mesh cubeMesh;
@@ -149,7 +150,8 @@ namespace ARPortal
             else
             {
                 portalCam.nearClipPlane = 0.3f;
-                portalCam.farClipPlane = 1000f;
+                //portalCam.farClipPlane = 1000f;
+                portalCam.farClipPlane = ImageDistance;
                 portalCam.fieldOfView = PortalFOV;
                 portalCam.depth = -1;
             }

@@ -19,6 +19,11 @@ namespace ARPortal
             {
                 c.CreatePortal();
             }
+
+            if(GUILayout.Button("Clean VR Camera After SteamVR Crash"))
+            {
+                c.CleanCameraSettingsAfterCrash();
+            }
         }
     }
 }

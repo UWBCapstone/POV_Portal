@@ -8,6 +8,30 @@ namespace ARPortal
     {
         public GameObject ControllerObject;
         public PortalCreator portalCreator;
+        public GameObject VRCamera;
+
+        public void Update()
+        {
+            ParseControllerInput();
+        }
+
+        public void ParseControllerInput()
+        {
+            if (OVRInput.Get(OVRInput.Button.SecondaryThumbstick))
+            {
+                CreatePortal();
+            }
+
+            if (OVRInput.Get(OVRInput.Button.One))
+            {
+                CreatePortal();
+            }
+
+            if (OVRInput.Get(OVRInput.Button.Two))
+            {
+                CreatePortal();
+            }
+        }
 
         public void CreatePortal()
         {
@@ -33,6 +57,13 @@ namespace ARPortal
             Vector3 collidedForward = collidedObject.transform.forward;
 
             portal.transform.forward = collidedForward;
+        }
+
+        [ExecuteInEditMode]
+        public void CleanCameraSettingsAfterCrash()
+        {
+            VRCamera.transform.localPosition = Vector3.zero;
+            VRCamera.transform.rotation = Quaternion.identity;
         }
     }
 }

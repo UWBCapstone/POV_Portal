@@ -6,7 +6,7 @@ namespace ARPortal
 {
     public class PortalManager : MonoBehaviour
     {
-        public const int MaxPortals = 3;
+        public int MaxPortals = 3;
         public WebCamManager webcamManager;
         public GameObject MainCamera;
         public List<GameObject> PortalList;
@@ -14,7 +14,7 @@ namespace ARPortal
 
         private int cyclicIndex = 0;
 
-        public void Awake()
+        public void Start()
         {
             PortalList = new List<GameObject>();
             TextureList = new List<Texture2D>();
@@ -22,6 +22,8 @@ namespace ARPortal
 
         public void Update()
         {
+            MaxPortals = webcamManager.NumVideoFeeds;
+
             List<Texture2D> feedList = FeedTextureTranslator.GetTexturesFrom(new List<WebCamTexture>(webcamManager.VideoFeeds));
             UpdateTextures(feedList);
 
@@ -105,11 +107,14 @@ namespace ARPortal
             {
                 GameObject portalToClose = PortalList[cyclicIndex];
 
+                //PortalList.Remove(portalToClose);
+                ClosePortal(portalToClose);
+
                 PortalList[cyclicIndex] = portal;
                 cyclicIndex++;
                 cyclicIndex %= MaxPortals;
 
-                ClosePortal(portal);
+                GameObject.Destroy(portalToClose);
             }
             else
             {

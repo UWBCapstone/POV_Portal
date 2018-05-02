@@ -1,7 +1,5 @@
 fileFormatVersion: 2
-guid: 8499aed3cc351ca48922cc33d297078d
-timeCreated: 1525134096
-licenseType: Free
+guid: b51ad12a45add75438b0b8494a1b5bc0
 PluginImporter:
   serializedVersion: 2
   iconMap: {}
@@ -9,21 +7,6 @@ PluginImporter:
   isPreloaded: 0
   isOverridable: 0
   platformData:
-    data:
-      first:
-        '': Editor
-      second:
-        enabled: 0
-        settings:
-          CPU: X86_64
-          OS: Windows
-    data:
-      first:
-        Android: Android
-      second:
-        enabled: 0
-        settings:
-          CPU: ARMv7
     data:
       first:
         Any: 
@@ -34,17 +17,16 @@ PluginImporter:
       first:
         Editor: Editor
       second:
-        enabled: 1
+        enabled: 0
         settings:
-          CPU: X86_64
           DefaultValueInitialized: true
-          OS: Windows
     data:
       first:
-        Standalone: Win64
+        Windows Store Apps: WindowsStoreApps
       second:
         enabled: 1
-        settings: {}
+        settings:
+          CPU: x86
   userData: 
   assetBundleName: 
   assetBundleVariant: 

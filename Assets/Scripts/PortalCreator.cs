@@ -71,8 +71,8 @@ namespace ARPortal
 
             // Set the portal's pose
             PortalTransform pt = getPortalTransform();
-            //portal.transform.SetPositionAndRotation(pt.pos, pt.rot);
-            portal.transform.position = pt.pos;
+            portal.transform.SetPositionAndRotation(pt.pos, pt.rot);
+            //portal.transform.position = pt.pos;
 
             // Set the camera used to determine settings for the portal
             GameObject portalCam = generatePortalCamera();

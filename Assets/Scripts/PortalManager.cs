@@ -22,7 +22,8 @@ namespace ARPortal
 
         public void Update()
         {
-            MaxPortals = webcamManager.NumVideoFeeds;
+            //MaxPortals = webcamManager.NumVideoFeeds;
+            MaxPortals = TextureList.Count;
 
             List<Texture2D> feedList = FeedTextureTranslator.GetTexturesFrom(new List<WebCamTexture>(webcamManager.VideoFeeds));
             UpdateTextures(feedList);

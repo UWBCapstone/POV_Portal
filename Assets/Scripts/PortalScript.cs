@@ -24,6 +24,40 @@ namespace ARPortal
         {
             Texture = tex;
             shaderSetter.Texture = Texture;
+
+            updatePortalCameraOnTextureUpdate();
+        }
+
+        private void updatePortalCameraOnTextureUpdate()
+        {
+            // Set the portal camera's FOV dynamically to match the webcam's
+            var webcamSpecs = WebCamSpecsManager.GetSpecs(WebCamSpecsManager.WebCamDeviceToSpecsName(Texture.name));
+            var horizontalFOV = webcamSpecs.HorizontalFOV;
+            var verticalFOV = webcamSpecs.VerticalFOV;
+            var aspect = horizontalFOV / verticalFOV;
+
+            GameObject portalCam = null;
+            int nChildren = gameObject.transform.childCount;
+            for (int i = 0; i < nChildren; i++)
+            {
+                GameObject child = transform.GetChild(i).gameObject;
+                if (child.name.Equals("PortalCam"))
+                {
+                    portalCam = child;
+                    break;
+                }
+            }
+
+            if (portalCam != null)
+            {
+                Camera cam = portalCam.GetComponent<Camera>();
+                if (cam != null)
+                {
+                    WebCamSpecsManager.AssignSpecsToCameraExceptFarClipPlane(cam, webcamSpecs);
+                    //cam.fieldOfView = verticalFOV;
+                    //cam.aspect = aspect;
+                }
+            }
         }
 
         //public void Play()

@@ -9,7 +9,10 @@
 	SubShader
 	{
 		Tags{ "RenderType" = "Opaque" }
+		//Tags{ "RenderType" = "Transparent" }
 		LOD 200
+		//ZWrite Off
+		// If trying to make stuff clear to the background, set up a background renderTexture camera and pass it in as the texture
 
 		Pass
 		{
@@ -73,7 +76,12 @@
 				true_uv.x = uvx;
 				true_uv.y = uvy;
 
-				fixed4 c = tex2D(_MainTex, true_uv);
+				fixed4 texC = tex2D(_MainTex, true_uv);
+				float stepCalc = step(0, true_uv.x) * step(true_uv.x, 1) * step(0, true_uv.y) * step(true_uv.y, 1);
+				//float4 c = step(0.001, stepCalc) * texC;// +(0, 0, 0, 1);
+				float4 c = stepCalc * texC;
+
+				//fixed4 c = tex2D(_MainTex, true_uv);
 
 				return c;
 			}

@@ -78,8 +78,12 @@ namespace ARPortal
                     // http://therandomlab.blogspot.com/2013/03/logitech-c920-and-c910-fields-of-view.html
                     //HorizontalFOV = 70.42f;
                     //VerticalFOV = 43.30f;
-                    HorizontalFOV = 26.565f;
-                    VerticalFOV = 20.908f;
+                    //HorizontalFOV = 26.565f;
+                    //VerticalFOV = 20.908f;
+                    // 11.5"W paper 10.75" away from camera
+                    // 8.5"H paper 10.75" away from camera
+                    HorizontalFOV = 2 * 27.095552f;
+                    VerticalFOV = 2 * 21.5713071913f;
                     NearClippingPlane = DefaultNearClippingPlane;
                     FarClippingPlane = DefaultFarClippingPlane;
                     WebcamDeviceName = WebcamDeviceNames.LOGITECH_C920;
@@ -104,8 +108,10 @@ namespace ARPortal
                 case WebcamDeviceNames.ADESSO_CYBERTRACK_V10:
                     //HorizontalFOV = 25.0f;
                     //VerticalFOV = 25.0f;
-                    HorizontalFOV = 22.620f;
-                    VerticalFOV = 15.819f;
+                    //HorizontalFOV = 22.620f;
+                    //VerticalFOV = 15.819f;
+                    HorizontalFOV = 2 * 22.620f; // Not verified
+                    VerticalFOV = 2 * 15.819f; // Not verified
                     NearClippingPlane = DefaultNearClippingPlane;
                     FarClippingPlane = DefaultFarClippingPlane;
                     WebcamDeviceName = WebcamDeviceNames.ADESSO_CYBERTRACK_V10;
@@ -130,8 +136,12 @@ namespace ARPortal
                 case WebcamDeviceNames.LAPTOP_WEBCAM:
                     //HorizontalFOV = 75.0f;
                     //VerticalFOV = 56.25f;
-                    HorizontalFOV = 24.4f;
-                    VerticalFOV = 19.9f;
+                    //HorizontalFOV = 24.4f;
+                    //VerticalFOV = 19.9f;
+                    // W: 11"W paper 10" away from camera
+                    // H: 8.5"H paper 10" away from camera
+                    HorizontalFOV = 2 * 28.810793743f; // Not verified
+                    VerticalFOV = 2 * 23.0254920085f; // Not verified
                     NearClippingPlane = DefaultNearClippingPlane;
                     FarClippingPlane = DefaultFarClippingPlane;
                     WebcamDeviceName = WebcamDeviceNames.LAPTOP_WEBCAM;
@@ -200,42 +210,55 @@ namespace ARPortal
             return camSpecs;
         }
 
-        public static WebcamDeviceNames WebCamDeviceToSpecsName(WebCamDevice webcam)
+        public static WebcamDeviceNames WebCamDeviceToSpecsName(WebCamDevice webCam)
         {
-            string deviceName = webcam.name;
+            string deviceName = webCam.name;
 
-            if (deviceName.ToLower().Contains("HD Pro Webcam C920".ToLower()))
+            return WebCamSpecsManager.WebCamDeviceToSpecsName(deviceName);
+        }
+
+        public static WebcamDeviceNames WebCamDeviceToSpecsName(string webcamDeviceName)
+        {
+            //string webcamDeviceName = webcam.name;
+
+            if (webcamDeviceName.ToLower().Contains("HD Pro Webcam C920".ToLower()))
             {
                 return WebcamDeviceNames.LOGITECH_C920;
             }
-            else if (deviceName.ToLower().Contains("Adesso".ToLower())
-                || deviceName.ToLower().Contains("USB 2.0".ToLower())
-                || deviceName.ToLower().Contains("USB2.0".ToLower()))
+            else if (webcamDeviceName.ToLower().Contains("Adesso".ToLower())
+                || webcamDeviceName.ToLower().Contains("USB 2.0".ToLower())
+                || webcamDeviceName.ToLower().Contains("USB2.0".ToLower()))
             {
                 return WebcamDeviceNames.ADESSO_CYBERTRACK_V10;
             }
-            else if(deviceName.ToLower().Contains("Integrated Webcam".ToLower()))
+            else if(webcamDeviceName.ToLower().Contains("Integrated Webcam".ToLower()))
             {
                 return WebcamDeviceNames.LAPTOP_WEBCAM;
             }
-            else if(deviceName.ToLower().Contains("Kinect V2 Video Sensor".ToLower()))
+            else if(webcamDeviceName.ToLower().Contains("Kinect V2 Video Sensor".ToLower()))
             {
                 return WebcamDeviceNames.KINECT_2;
             }
             else
             {
-                Debug.LogError("Unfamiliar webcam device encountered: " + deviceName);
+                Debug.LogError("Unfamiliar webcam device encountered: " + webcamDeviceName);
                 return WebcamDeviceNames.NULL;
             }
         }
 
         public static void AssignSpecsToCamera(Camera cam, WebCamSpecs specs)
         {
-
             cam.fieldOfView = specs.VerticalFOV;
             cam.aspect = (float)((double)specs.HorizontalFOV / (double)specs.VerticalFOV);
             cam.near = specs.NearClippingPlane;
             cam.far = specs.FarClippingPlane;
+        }
+
+        public static void AssignSpecsToCameraExceptFarClipPlane(Camera cam, WebCamSpecs specs)
+        {
+            cam.fieldOfView = specs.VerticalFOV;
+            cam.aspect = (float)((double)specs.HorizontalFOV / (double)specs.VerticalFOV);
+            cam.near = specs.NearClippingPlane;
         }
     }
 }

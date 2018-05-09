@@ -21,7 +21,12 @@ namespace ARPortal
         {
             if (feed != null)
             {
+                //var specs = WebCamSpecsManager.GetSpecs(WebCamSpecsManager.WebCamDeviceToSpecsName(feed.deviceName));
+                //Texture2D tex = new Texture2D(specs.HorizontalResolution, specs.VerticalResolution, TextureFormat.RGBA32, false);
+                //Debug.Log(tex.width);
+
                 Texture2D tex = new Texture2D(feed.width, feed.height, TextureFormat.RGBA32, false);
+                tex.name = feed.deviceName;
                 tex.wrapMode = TextureWrapMode.Clamp;
                 tex.SetPixels(feed.GetPixels());
                 tex.Apply();

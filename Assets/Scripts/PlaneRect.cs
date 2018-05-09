@@ -15,23 +15,31 @@ namespace ARPortal
         public PlaneRect()
         {
             p00 = Vector3.zero;
-            p01 = new Vector3(1, 0);
-            p10 = new Vector3(0, 1);
+            p01 = new Vector3(0, 1);
+            p10 = new Vector3(1, 0);
             p11 = new Vector3(1, 1);
         }
 
-        public PlaneRect(Vector3 LowerLeft, Vector3 UpperLeft, Vector3 UpperRight, Vector3 LowerRight)
+        public PlaneRect(PlaneRect pr)
         {
-            p00 = LowerLeft;
-            p10 = UpperLeft;
-            p11 = UpperRight;
-            p01 = LowerRight;
+            this.p00 = pr.p00;
+            this.p01 = pr.p01;
+            this.p10 = pr.p10;
+            this.p11 = pr.p11;
         }
 
-        public PlaneRect(Vector3 min, Vector3 max, Vector3 normal)
+        public PlaneRect(Vector3 LowerLeft, Vector3 UpperLeft, Vector3 UpperRight, Vector3 LowerRight) : this()
         {
-            p00 = min;
-            p11 = max;
+            p00 = LowerLeft;
+            p10 = LowerRight;
+            p11 = UpperRight;
+            p01 = UpperLeft;
+        }
+
+        public PlaneRect(Vector3 min, Vector3 max, Vector3 normal, bool isSquare) : this()
+        {
+            p00 = new Vector3(min.x, min.y, min.z);
+            p11 = new Vector3(max.x, max.y, max.z);
             Vector3 cent = p00 + ((p11 - p00) / 2);
             if ((p11 - p00).normalized == normal.normalized
                 || (p00 - p11).normalized == normal.normalized)
@@ -44,18 +52,42 @@ namespace ARPortal
             }
             else
             {
-                Vector3 dir = Vector3.Cross(p11 - p00, normal);
-                //Debug.Log("Direction vector to p01 and p10 is " + dir);
-                Vector3 dis = ((p11 - p00) / 2).magnitude * dir.normalized;
-                //Debug.Log("Distance magnitude is " + ((p11 - p00) / 2).magnitude * dir.normalized);
-                //Debug.Log("Distance is " + dis);
-                p10 = cent - dis;
-                p01 = cent + dis;
+                if (isSquare)
+                {
+                    Vector3 dir = Vector3.Cross(p11 - p00, normal);
+                    //Debug.Log("Direction vector to p01 and p10 is " + dir);
+                    Vector3 dis = ((p11 - p00) / 2).magnitude * dir.normalized;
+                    //Debug.Log("Distance magnitude is " + ((p11 - p00) / 2).magnitude * dir.normalized);
+                    //Debug.Log("Distance is " + dis);
+                    p10 = cent - dis;
+                    p01 = cent + dis;
+                }
+                else
+                {
+                    // Assumes it's a vertical rectangle that is horizontally level
+                    Vector3 left = cent + Vector3.left;
+                    float dotL = Vector3.Dot(p00 - cent, left - cent);
+                    left = cent + Vector3.left * dotL;
+                    p01 = p00 + (left - p00) * 2;
+
+                    Vector3 right = cent + Vector3.right;
+                    float dotR = Vector3.Dot(p11 - cent, right - cent);
+                    right = cent + Vector3.right * dotR;
+                    p10 = p11 + (right - p11) * 2;
+                }
             }
         }
         #endregion
 
         #region Methods
+        public void CopyTo(PlaneRect pr)
+        {
+            pr.p00 = this.p00;
+            pr.p01 = this.p01;
+            pr.p11 = this.p11;
+            pr.p10 = this.p10;
+        }
+
         public Vector3 Translate(Vector3 vec)
         {
             p00 += vec;

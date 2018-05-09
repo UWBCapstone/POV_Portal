@@ -11,6 +11,7 @@ namespace ARPortal
         private Vector3 up;
         private Vector3 forward;
         private Vector3 right;
+        private float aspect;
         private float deg;
         private float dis;
         private float hypotenuse;
@@ -24,6 +25,7 @@ namespace ARPortal
 
         public void UpdateInfo(Camera cam)
         {
+            aspect = cam.aspect;
             pos = cam.transform.position;
             up = cam.transform.up;
             forward = cam.transform.forward;
@@ -42,27 +44,29 @@ namespace ARPortal
             //Debug.Log("Distance is " + dis);
             //Debug.Log("Hypotenuse is " + hypotenuse);
 
-            clipPlane = new PlaneRect(calc00(), calc11(), -forward);
+            bool isSquare = aspect > 0.98f && aspect < 1.02f;
+
+            clipPlane = new PlaneRect(calc00(), calc11(), -forward, isSquare);
         }
 
         private Vector3 calc00()
         {
-            return pos - right.normalized * opposite - up.normalized * opposite + forward * dis;
+            return pos - right.normalized * opposite * aspect - up.normalized * opposite + forward * dis;
         }
 
         private Vector3 calc01()
         {
-            return pos - right.normalized * opposite + up.normalized * opposite + forward * dis;
+            return pos - right.normalized * opposite * aspect + up.normalized * opposite + forward * dis;
         }
 
         private Vector3 calc10()
         {
-            return pos + right.normalized * opposite - up.normalized * opposite + forward * dis;
+            return pos + right.normalized * opposite * aspect - up.normalized * opposite + forward * dis;
         }
 
         private Vector3 calc11()
         {
-            return pos + right.normalized * opposite + up.normalized * opposite + forward * dis;
+            return pos + right.normalized * opposite * aspect + up.normalized * opposite + forward * dis;
         }
 
         public RaycastHit Intersect(Ray ray, Vector3 origin)

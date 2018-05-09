@@ -17,7 +17,7 @@ namespace ARPortal
             posX += Input.GetAxis("Mouse X") * xScale;
             posZ += Input.GetAxis("Mouse Y") * zScale;
 
-            gameObject.transform.position = new Vector3(posX, 0, posZ);
+            gameObject.transform.position = new Vector3(posX, Camera.main.transform.position.y, posZ);
         }
     }
 }

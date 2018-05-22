@@ -125,6 +125,7 @@ namespace ARPortal
         private GameObject generatePortalCamera()
         {
             GameObject portalCamera = new GameObject();
+            portalCamera.transform.position = Vector3.zero;
             portalCamera.name = "PortalCam";
             portalCamera.AddComponent<Camera>();
 

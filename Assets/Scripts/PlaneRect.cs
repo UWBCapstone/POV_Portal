@@ -11,6 +11,8 @@ namespace ARPortal
         private Vector3 p10;
         private Vector3 p11;
 
+        private Quaternion rotation;
+
         #region Constructors
         public PlaneRect()
         {
@@ -18,6 +20,8 @@ namespace ARPortal
             p01 = new Vector3(0, 1);
             p10 = new Vector3(1, 0);
             p11 = new Vector3(1, 1);
+
+            rotation = Quaternion.identity;
         }
 
         public PlaneRect(PlaneRect pr)
@@ -26,6 +30,8 @@ namespace ARPortal
             this.p01 = pr.p01;
             this.p10 = pr.p10;
             this.p11 = pr.p11;
+
+            rotation = Quaternion.identity;
         }
 
         public PlaneRect(Vector3 LowerLeft, Vector3 UpperLeft, Vector3 UpperRight, Vector3 LowerRight) : this()
@@ -34,6 +40,8 @@ namespace ARPortal
             p10 = LowerRight;
             p11 = UpperRight;
             p01 = UpperLeft;
+
+            rotation = Quaternion.identity;
         }
 
         public PlaneRect(Vector3 min, Vector3 max, Vector3 normal, bool isSquare) : this()
@@ -76,6 +84,8 @@ namespace ARPortal
                     p10 = p11 + (right - p11) * 2;
                 }
             }
+
+            rotation = Quaternion.identity;
         }
         #endregion
 
@@ -136,6 +146,25 @@ namespace ARPortal
 
             info.barycentricCoordinate = Vector3.zero;
             return info;
+        }
+
+        public void RotateAroundPoint(Vector3 point, Quaternion rotation)
+        {
+            Vector3 P00Dir = p00 - point;
+            P00Dir = rotation * P00Dir;
+            p00 = P00Dir + point;
+
+            Vector3 P01Dir = p01 - point;
+            P01Dir = rotation * P01Dir;
+            p01 = P01Dir + point;
+
+            Vector3 P10Dir = p10 - point;
+            P10Dir = rotation * P10Dir;
+            p10 = P10Dir + point;
+
+            Vector3 P11Dir = p11 - point;
+            P11Dir = rotation * P11Dir;
+            p11 = P11Dir + point;
         }
         #endregion
 
@@ -257,28 +286,63 @@ namespace ARPortal
         {
             get
             {
-                return p00;
+                Vector3 point = p00;
+
+                Vector3 dir = point - center;
+                dir = rotation * dir;
+                point = dir + center;
+
+                return point;
             }
         }
         public Vector3 Corner01
         {
             get
             {
-                return p01;
+                Vector3 point = p01;
+
+                Vector3 dir = point - center;
+                dir = rotation * dir;
+                point = dir + center; 
+
+                return point;
             }
         }
         public Vector3 Corner10
         {
             get
             {
-                return p10;
+                Vector3 point = p10;
+
+                Vector3 dir = point - center;
+                dir = rotation * dir;
+                point = dir + center;
+
+                return point;
             }
         }
         public Vector3 Corner11
         {
             get
             {
-                return p11;
+                Vector3 point = p11;
+
+                Vector3 dir = point - center;
+                dir = rotation * dir;
+                point = dir + center;
+
+                return point;
+            }
+        }
+        public Quaternion Rotation
+        {
+            get
+            {
+                return rotation;
+            }
+            set
+            {
+                rotation = value;
             }
         }
 

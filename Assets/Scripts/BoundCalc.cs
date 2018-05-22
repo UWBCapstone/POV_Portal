@@ -27,6 +27,8 @@ namespace ARPortal
                     cent.x - extents.x,
                     cent.y - extents.y,
                     cent.z);
+
+            P00 = RotatePointAroundCenter(P00, cent, go.transform.rotation);
             return P00;
         }
 
@@ -34,36 +36,49 @@ namespace ARPortal
         {
             Vector3 cent = Center(go);
             Vector3 extents = Extents(go);
-            Vector3 P00 =
+            Vector3 P01 =
                 new Vector3(
                     cent.x - extents.x,
                     cent.y + extents.y,
                     cent.z);
-            return P00;
+
+            P01 = RotatePointAroundCenter(P01, cent, go.transform.rotation);
+            return P01;
         }
 
         public static Vector3 Corner10(GameObject go)
         {
             Vector3 cent = Center(go);
             Vector3 extents = Extents(go);
-            Vector3 P00 =
+            Vector3 P10 =
                 new Vector3(
                     cent.x + extents.x,
                     cent.y - extents.y,
                     cent.z);
-            return P00;
+
+            P10 = RotatePointAroundCenter(P10, cent, go.transform.rotation);
+            return P10;
         }
 
         public static Vector3 Corner11(GameObject go)
         {
             Vector3 cent = Center(go);
             Vector3 extents = Extents(go);
-            Vector3 P00 =
+            Vector3 P11 =
                 new Vector3(
                     cent.x + extents.x,
                     cent.y + extents.y,
                     cent.z);
-            return P00;
+
+            P11 = RotatePointAroundCenter(P11, cent, go.transform.rotation);
+            return P11;
+        }
+
+        private static Vector3 RotatePointAroundCenter(Vector3 point, Vector3 cent, Quaternion rotation)
+        {
+            Vector3 dir = point - cent;
+            dir = rotation * dir;
+            return cent + dir;
         }
 
         public static Vector3 Center(GameObject go)

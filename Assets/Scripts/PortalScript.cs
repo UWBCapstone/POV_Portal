@@ -14,10 +14,19 @@ namespace ARPortal
         //public WebCamTexture WebCamFeed;
         public Texture2D Texture;
         public ShaderSetter shaderSetter;
+        private Quaternion origRotation_m;
 
         public void Awake()
         {
             shaderSetter = gameObject.GetComponent<ShaderSetter>();
+            origRotation_m = gameObject.transform.root.rotation;
+        }
+
+        public Quaternion GetRotationDiff()
+        {
+            Quaternion origRot = origRotation_m;
+            Quaternion currentRot = gameObject.transform.rotation;
+            return origRot * Quaternion.Inverse(currentRot);
         }
 
         public void UpdateTexture(Texture2D tex)

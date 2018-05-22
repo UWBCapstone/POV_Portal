@@ -69,6 +69,23 @@ namespace ARPortal
         public UVBounds ClipUV()
         {
             ClipPlaneManager clipPlane = new ClipPlaneManager(PortalCamera.GetComponent<Camera>());
+            // Get the root object (portal's) rotation difference from its original rotation
+            var portalScript = gameObject.transform.root.gameObject.GetComponent<PortalScript>();
+            if(portalScript != null)
+            {
+                Quaternion deltaPortalRot = portalScript.GetRotationDiff();
+                Vector3 portalCamPos = portalScript.gameObject.GetComponentInChildren<Camera>().transform.position;
+                clipPlane.ClipRect.RotateAroundPoint(portalCamPos, deltaPortalRot);
+                Debug.Log("00 = " + clipPlane.ClipRect.Corner00);
+                Debug.Log("01 = " + clipPlane.ClipRect.Corner01);
+                Debug.Log("10 = " + clipPlane.ClipRect.Corner10);
+                Debug.Log("11 = " + clipPlane.ClipRect.Corner11);
+            }
+            else
+            {
+                Debug.LogError("UVCalc could not find portal's portal script to appropriately apply rotation for UV plane calculations!");
+            }
+
             //Vector3 origin = gameObject.transform.position;
             //GameObject portal = PortalCamera.transform.parent.gameObject;
             Vector3 origin = Viewer.transform.position;

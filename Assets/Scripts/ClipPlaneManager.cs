@@ -47,6 +47,7 @@ namespace ARPortal
             bool isSquare = aspect > 0.98f && aspect < 1.02f;
 
             clipPlane = new PlaneRect(calc00(), calc11(), -forward, isSquare);
+            //clipPlane.Rotation = cam.transform.root.rotation;
         }
 
         private Vector3 calc00()

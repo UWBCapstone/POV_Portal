@@ -75,11 +75,16 @@ namespace ARPortal
             {
                 Quaternion deltaPortalRot = portalScript.GetRotationDiff();
                 Vector3 portalCamPos = portalScript.gameObject.GetComponentInChildren<Camera>().transform.position;
-                clipPlane.ClipRect.RotateAroundPoint(portalCamPos, deltaPortalRot);
-                Debug.Log("00 = " + clipPlane.ClipRect.Corner00);
-                Debug.Log("01 = " + clipPlane.ClipRect.Corner01);
-                Debug.Log("10 = " + clipPlane.ClipRect.Corner10);
-                Debug.Log("11 = " + clipPlane.ClipRect.Corner11);
+                //clipPlane.ClipRect.RotateAroundPoint(portalCamPos, deltaPortalRot);
+
+                Quaternion origRot = portalScript.origRotation_m;
+                Quaternion currentRot = portalScript.gameObject.transform.rotation;
+                clipPlane.ClipRect.RotateToAroundPoint(portalCamPos, currentRot, origRot);
+
+                // For debugging purposes only
+                var debugger = GameObject.FindObjectOfType<PlaneRectDebugger>();
+                debugger.cam = PortalCamera.GetComponent<Camera>();
+                debugger.camParent = gameObject;
             }
             else
             {
@@ -124,6 +129,9 @@ namespace ARPortal
             Debug.DrawLine(origin, rh01.point, Color.green);
             Debug.DrawLine(origin, rh10.point, Color.blue);
             Debug.DrawLine(origin, rh11.point, Color.white);
+
+            Debug.DrawLine(origin, origin + clipPlane.ClipRect.Up * 5, Color.black);
+            Debug.DrawLine(origin, origin + clipPlane.ClipRect.Right * 5, Color.magenta);
 
             return bounds;
         }

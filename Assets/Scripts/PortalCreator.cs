@@ -45,11 +45,13 @@ namespace ARPortal
 
         public GameObject GeneratePortal()
         {
-            GameObject portal = generatePortalObject();
+            Quaternion portalRot;
+            GameObject portal = generatePortalObject(out portalRot);
             GameObject window = generateWindow(portal);
             window.transform.parent = portal.transform;
             window.transform.localPosition = Vector3.zero;
-            window.transform.localRotation = Quaternion.identity;
+            //window.transform.localRotation = Quaternion.identity;
+            window.transform.localRotation = portalRot;
 
             // Reposition
             portal.transform.position = StartPosition;
@@ -60,7 +62,7 @@ namespace ARPortal
             return portal;
         }
 
-        private GameObject generatePortalObject()
+        private GameObject generatePortalObject(out Quaternion portalRot)
         {
             // Make the portal and disable it so it doesn't show immediately 
             // while loading
@@ -71,7 +73,9 @@ namespace ARPortal
 
             // Set the portal's pose
             PortalTransform pt = getPortalTransform();
-            portal.transform.SetPositionAndRotation(pt.pos, pt.rot);
+            //portal.transform.SetPositionAndRotation(pt.pos, pt.rot);
+            portal.transform.position = pt.pos;
+            portalRot = pt.rot;
             //portal.transform.position = pt.pos;
 
             // Set the camera used to determine settings for the portal

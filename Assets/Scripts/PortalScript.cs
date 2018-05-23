@@ -14,7 +14,8 @@ namespace ARPortal
         //public WebCamTexture WebCamFeed;
         public Texture2D Texture;
         public ShaderSetter shaderSetter;
-        private Quaternion origRotation_m;
+        [HideInInspector]
+        public Quaternion origRotation_m;
 
         public void Awake()
         {

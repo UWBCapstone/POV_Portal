@@ -136,7 +136,18 @@ namespace ARPortal
             //Debug.Log("p10 = " + p10);
             //Debug.Log("p11 = " + p11);
 
-            float t = Vector3.Dot((position - origin), Normal) / Vector3.Dot(ray.direction.normalized, Normal);
+            Vector3 temp = position - origin;
+            float mag = temp.magnitude;
+            float NormalMag = Normal.magnitude;
+            float top = Vector3.Dot((position - origin), Normal);
+            float bot = Vector3.Dot(ray.direction.normalized, Normal);
+
+            Debug.DrawLine(origin, position, Color.black);
+            Debug.DrawLine(position, position + Normal, Color.magenta);
+            Debug.DrawLine(origin, origin + ray.direction, Color.white);
+
+            //float t = Vector3.Dot((position - origin).normalized, Normal) / Vector3.Dot(ray.direction.normalized, Normal);
+            float t = top / bot;
             //Debug.Log("Normal = " + Normal);
 
             RaycastHit info = new RaycastHit();
@@ -148,23 +159,58 @@ namespace ARPortal
             return info;
         }
 
+        public void RotateToAroundPoint(Vector3 point, Quaternion rotation, Quaternion oldRotation)
+        {
+            // diff * p1 = p2; diff = p2 * Inverse(p1)
+            Quaternion p2 = rotation;
+            Quaternion p1 = oldRotation;
+            //Quaternion diff = p2 * Quaternion.Inverse(p1);
+            Quaternion diff = Quaternion.Inverse(p1) * p2;
+
+            RotateAroundPoint(point, diff);
+        }
+
         public void RotateAroundPoint(Vector3 point, Quaternion rotation)
         {
-            Vector3 P00Dir = p00 - point;
-            P00Dir = rotation * P00Dir;
-            p00 = P00Dir + point;
+            Vector3 dir = center - point;
+            //Vector3 centToP00 = Corner00 - center;
+            //Vector3 centToP01 = Corner01 - center;
+            //Vector3 centToP10 = Corner10 - center;
+            //Vector3 centToP11 = Corner11 - center;
+            
+            KeyValuePair<float, float> p00XYDis = new KeyValuePair<float, float>(-(width / 2), -(height / 2));
+            KeyValuePair<float, float> p01XYDis = new KeyValuePair<float, float>(-(width / 2), (height / 2));
+            KeyValuePair<float, float> p11XYDis = new KeyValuePair<float, float>((width / 2), (height / 2));
+            KeyValuePair<float, float> p10XYDis = new KeyValuePair<float, float>((width / 2), -(height / 2));
 
-            Vector3 P01Dir = p01 - point;
-            P01Dir = rotation * P01Dir;
-            p01 = P01Dir + point;
+            dir = rotation * dir;
+            Vector3 up = Up;
+            Vector3 right = Right;
+            up = rotation * up;
+            right = rotation * right;
 
-            Vector3 P10Dir = p10 - point;
-            P10Dir = rotation * P10Dir;
-            p10 = P10Dir + point;
+            Vector3 newCent = point + dir;
+            p00 = newCent + right * p00XYDis.Key + up * p00XYDis.Value;
+            p01 = newCent + right * p01XYDis.Key + up * p01XYDis.Value;
+            p11 = newCent + right * p11XYDis.Key + up * p11XYDis.Value;
+            p10 = newCent + right * p10XYDis.Key + up * p10XYDis.Value;
 
-            Vector3 P11Dir = p11 - point;
-            P11Dir = rotation * P11Dir;
-            p11 = P11Dir + point;
+
+            //Vector3 P00Dir = p00 - point;
+            //P00Dir = rotation * P00Dir;
+            //p00 = P00Dir + point;
+
+            //Vector3 P01Dir = p01 - point;
+            //P01Dir = rotation * P01Dir;
+            //p01 = P01Dir + point;
+
+            //Vector3 P10Dir = p10 - point;
+            //P10Dir = rotation * P10Dir;
+            //p10 = P10Dir + point;
+
+            //Vector3 P11Dir = p11 - point;
+            //P11Dir = rotation * P11Dir;
+            //p11 = P11Dir + point;
         }
         #endregion
 
@@ -173,6 +219,10 @@ namespace ARPortal
         {
             get
             {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.transform.localScale = Vector3.one * 0.1f;
+                go.transform.position = (p00 + ((p11 - p00) / 2));
+
                 return p00 + ((p11 - p00) / 2);
             }
         }
@@ -286,52 +336,73 @@ namespace ARPortal
         {
             get
             {
-                Vector3 point = p00;
+                //Vector3 point = p00;
 
-                Vector3 dir = point - center;
-                dir = rotation * dir;
-                point = dir + center;
+                //Vector3 dir = point - center;
+                //dir = rotation * dir;
+                //point = dir + center;
 
-                return point;
+                //return point;
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.transform.localScale = Vector3.one * 0.1f;
+                go.transform.position = p00;
+
+                return p00;
             }
         }
         public Vector3 Corner01
         {
             get
             {
-                Vector3 point = p01;
+                //Vector3 point = p01;
 
-                Vector3 dir = point - center;
-                dir = rotation * dir;
-                point = dir + center; 
+                //Vector3 dir = point - center;
+                //dir = rotation * dir;
+                //point = dir + center; 
 
-                return point;
+                //return point;
+
+
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.transform.localScale = Vector3.one * 0.1f;
+                go.transform.position = p01;
+
+                return p01;
             }
         }
         public Vector3 Corner10
         {
             get
             {
-                Vector3 point = p10;
+                //Vector3 point = p10;
 
-                Vector3 dir = point - center;
-                dir = rotation * dir;
-                point = dir + center;
+                //Vector3 dir = point - center;
+                //dir = rotation * dir;
+                //point = dir + center;
 
-                return point;
+                //return point;
+
+                return p10;
             }
         }
         public Vector3 Corner11
         {
             get
             {
-                Vector3 point = p11;
+                //Vector3 point = p11;
 
-                Vector3 dir = point - center;
-                dir = rotation * dir;
-                point = dir + center;
+                //Vector3 dir = point - center;
+                //dir = rotation * dir;
+                //point = dir + center;
 
-                return point;
+                //return point;
+
+
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.transform.localScale = Vector3.one * 0.1f;
+                go.transform.position = p11;
+
+                return p11;
             }
         }
         public Quaternion Rotation
@@ -350,14 +421,17 @@ namespace ARPortal
         {
             get
             {
-                return (p11 - p01).normalized;
+                //return (p11 - p01).normalized;
+                return (Corner11 - Corner01).normalized;
             }
         }
         public Vector3 Up
         {
             get
             {
-                return (p11 - p10).normalized;
+                //return (p11 - p10).normalized;
+                return Vector3.up;
+                return (Corner11 - Corner10).normalized;
             }
         }
         public Vector3 Normal

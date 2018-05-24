@@ -33,6 +33,26 @@ namespace ARPortal
             // mesh later
             var tempCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cubeMesh = tempCube.GetComponent<MeshFilter>().mesh;
+
+            // Fix the terrible uvs for the default cube
+            List<Vector2> uvs = new List<Vector2>();
+            cubeMesh.GetUVs(0, uvs);
+            for(int i = 0; i < uvs.Count; i++)
+            {
+                uvs[i] = Vector2.zero;
+            }
+            // 6  = bottom right
+            // 7 = bottom left
+            // 10 = top right
+            // 11 = top left
+
+            // Set the uvs appropriately
+            uvs[6] = new Vector2(1, 0);
+            uvs[7] = new Vector2(0, 0);
+            uvs[10] = new Vector2(1, 1);
+            uvs[11] = new Vector2(0, 1);
+            cubeMesh.SetUVs(0, uvs);
+
             GameObject.Destroy(tempCube);
         }
 
@@ -55,6 +75,9 @@ namespace ARPortal
 
             // Reposition
             portal.transform.position = StartPosition;
+            
+            // turn off shadows for portal and all children
+            turnOffShadows(portal);
 
             //SetAsActivePortal(portal);
             portalManager.RegisterPortal(portal);
@@ -114,6 +137,7 @@ namespace ARPortal
             }
             mf.mesh = cubeMesh;
             mr.material = generatePortalMaterial();
+            //mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
             // Flatten the cube to give a square portal
             portal.transform.localScale = new Vector3(1, 1, 0.01f);
@@ -278,13 +302,30 @@ namespace ARPortal
                 GameObject stiles = generateWindowStiles(portal);
                 stiles.transform.parent = window.transform;
                 stiles.transform.localPosition = Vector3.zero;
-                
+
                 window.SetActive(true);
                 return window;
             }
             else
             {
                 return null;
+            }
+        }
+
+        private void turnOffShadows(GameObject go)
+        {
+            if(go != null)
+            {
+                var mr = go.GetComponent<MeshRenderer>();
+                if(mr != null)
+                {
+                    mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+                for(int i = 0; i < go.transform.childCount; i++)
+                {
+                    GameObject child = go.transform.GetChild(i).gameObject;
+                    turnOffShadows(child);
+                }
             }
         }
 

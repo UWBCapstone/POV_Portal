@@ -44,7 +44,7 @@ namespace ARPortal
             rotation = Quaternion.identity;
         }
 
-        public PlaneRect(Vector3 min, Vector3 max, Vector3 normal, bool isSquare) : this()
+        public PlaneRect(Vector3 min, Vector3 max, Vector3 normal, bool isSquare, Vector3 right) : this()
         {
             p00 = new Vector3(min.x, min.y, min.z);
             p11 = new Vector3(max.x, max.y, max.z);
@@ -72,16 +72,25 @@ namespace ARPortal
                 }
                 else
                 {
-                    // Assumes it's a vertical rectangle that is horizontally level
-                    Vector3 left = cent + Vector3.left;
-                    float dotL = Vector3.Dot(p00 - cent, left - cent);
-                    left = cent + Vector3.left * dotL;
-                    p01 = p00 + (left - p00) * 2;
+                    //// Assumes it's a vertical rectangle that is horizontally level
+                    //Vector3 left = cent + Vector3.left;
+                    //float dotL = Vector3.Dot(p00 - cent, left - cent);
+                    //left = cent + Vector3.left * dotL;
+                    //p01 = p00 + (left - p00) * 2;
 
-                    Vector3 right = cent + Vector3.right;
-                    float dotR = Vector3.Dot(p11 - cent, right - cent);
-                    right = cent + Vector3.right * dotR;
-                    p10 = p11 + (right - p11) * 2;
+                    //Vector3 right = cent + Vector3.right;
+                    //float dotR = Vector3.Dot(p11 - cent, right - cent);
+                    //right = cent + Vector3.right * dotR;
+                    //p10 = p11 + (right - p11) * 2;
+                    
+                    Vector3 centTo11 = p11 - cent;
+                    float dotR = Vector3.Dot(centTo11, right);
+                    p10 = p00 + (2 * dotR * right);
+
+                    Vector3 left = -right;
+                    Vector3 centTo00 = p00 - cent;
+                    float dotL = Vector3.Dot(centTo00, left);
+                    p01 = p11 + (2 * dotL * left);
                 }
             }
 
@@ -219,9 +228,9 @@ namespace ARPortal
         {
             get
             {
-                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.transform.localScale = Vector3.one * 0.1f;
-                go.transform.position = (p00 + ((p11 - p00) / 2));
+                //var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                //go.transform.localScale = Vector3.one * 0.1f;
+                //go.transform.position = (p00 + ((p11 - p00) / 2));
 
                 return p00 + ((p11 - p00) / 2);
             }
@@ -343,9 +352,9 @@ namespace ARPortal
                 //point = dir + center;
 
                 //return point;
-                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.transform.localScale = Vector3.one * 0.1f;
-                go.transform.position = p00;
+                //var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                //go.transform.localScale = Vector3.one * 0.1f;
+                //go.transform.position = p00;
 
                 return p00;
             }
@@ -363,9 +372,9 @@ namespace ARPortal
                 //return point;
 
 
-                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.transform.localScale = Vector3.one * 0.1f;
-                go.transform.position = p01;
+                //var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                //go.transform.localScale = Vector3.one * 0.1f;
+                //go.transform.position = p01;
 
                 return p01;
             }
@@ -398,9 +407,9 @@ namespace ARPortal
                 //return point;
 
 
-                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.transform.localScale = Vector3.one * 0.1f;
-                go.transform.position = p11;
+                //var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                //go.transform.localScale = Vector3.one * 0.1f;
+                //go.transform.position = p11;
 
                 return p11;
             }
@@ -430,7 +439,7 @@ namespace ARPortal
             get
             {
                 //return (p11 - p10).normalized;
-                return Vector3.up;
+                //return Vector3.up;
                 return (Corner11 - Corner10).normalized;
             }
         }

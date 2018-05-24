@@ -73,13 +73,17 @@ namespace ARPortal
             var portalScript = gameObject.transform.root.gameObject.GetComponent<PortalScript>();
             if(portalScript != null)
             {
-                Quaternion deltaPortalRot = portalScript.GetRotationDiff();
-                Vector3 portalCamPos = portalScript.gameObject.GetComponentInChildren<Camera>().transform.position;
-                //clipPlane.ClipRect.RotateAroundPoint(portalCamPos, deltaPortalRot);
+                // ERROR WARNING: When dynamically creating a clip plane instead of updating here, you are creating a clip plane using the camera's current settings.
+                // This means that you do not need to set rotate again, as that will double-rotate the object. If this clip plane were persistent, then you would have
+                // to update the rotation every frame to make sure that the position of the points is still correct!
 
-                Quaternion origRot = portalScript.origRotation_m;
-                Quaternion currentRot = portalScript.gameObject.transform.rotation;
-                clipPlane.ClipRect.RotateToAroundPoint(portalCamPos, currentRot, origRot);
+                //Quaternion deltaPortalRot = portalScript.GetRotationDiff();
+                //Vector3 portalCamPos = portalScript.gameObject.GetComponentInChildren<Camera>().transform.position;
+                ////clipPlane.ClipRect.RotateAroundPoint(portalCamPos, deltaPortalRot);
+
+                //Quaternion origRot = portalScript.origRotation_m;
+                //Quaternion currentRot = portalScript.gameObject.transform.rotation;
+                //clipPlane.ClipRect.RotateToAroundPoint(portalCamPos, currentRot, origRot);
 
                 // For debugging purposes only
                 var debugger = GameObject.FindObjectOfType<PlaneRectDebugger>();
